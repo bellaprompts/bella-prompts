@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bella Prompts — Create like an AI pro. Without thinking like one.</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0d0d0f; color: #fff; min-height: 100vh; }
+.nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 32px; border-bottom: 0.5px solid rgba(255,255,255,0.08); }
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-icon { width: 36px; height: 36px; background: #7c5cbf; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 16px; }
+.logo-text { font-size: 17px; font-weight: 500; }
+.logo-text span { color: #a78bfa; }
+.tier-badge { background: rgba(255,255,255,0.06); border: 0.5px solid rgba(255,255,255,0.12); border-radius: 20px; padding: 6px 14px; font-size: 13px; color: rgba(255,255,255,0.6); }
+.main { display: grid; grid-template-columns: 360px 1fr; min-height: calc(100vh - 57px); }
+.sidebar { padding: 28px 24px; border-right: 0.5px solid rgba(255,255,255,0.08); }
+.sidebar h2 { font-size: 18px; font-weight: 500; margin-bottom: 6px; }
+.sidebar p { font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 24px; line-height: 1.6; }
+label { display: block; font-size: 12px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+select, textarea { width: 100%; background: rgba(255,255,255,0.05); border: 0.5px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 11px 14px; color: #fff; font-size: 14px; margin-bottom: 18px; font-family: inherit; }
+select { appearance: none; cursor: pointer; }
+select:focus, textarea:focus { outline: none; border-color: #a78bfa; }
+textarea { resize: none; height: 110px; }
+textarea::placeholder { color: rgba(255,255,255,0.3); }
+.gen-btn { width: 100%; background: #7c5cbf; border: none; border-radius: 10px; padding: 14px; color: #fff; font-size: 15px; font-weight: 500; cursor: pointer; }
+.gen-btn:hover { background: #6d4fad; }
+.gen-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.results { padding: 28px 32px; overflow-y: auto; }
+.empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; padding: 60px; }
+.empty-icon { width: 64px; height: 64px; background: rgba(124,92,191,0.15); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 28px; }
+.empty h3 { font-size: 18px; font-weight: 500; margin-bottom: 8px; }
+.empty p { font-size: 14px; color: rgba(255,255,255,0.4); max-width: 280px; line-height: 1.6; }
+.loading { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 20px; padding: 60px; }
+.spinner { width: 40px; height: 40px; border: 2px solid rgba(124,92,191,0.2); border-top-color: #a78bfa; border-radius: 50%; animation: spin 0.8s linear infinite; }
+.loading-text { font-size: 15px; color: rgba(255,255,255,0.6); text-align: center; line-height: 1.6; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.result-header { grid-column: 1 / -1; margin-bottom: 4px; }
+.result-title { font-size: 22px; font-weight: 500; margin-bottom: 4px; }
+.result-sub { font-size: 13px; color: rgba(255,255,255,0.45); }
+.card { background: rgba(255,255,255,0.04); border: 0.5px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 20px; }
+.card-full { grid-column: 1 / -1; }
+.card-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.4); margin-bottom: 6px; }
+.card-title { font-size: 15px; font-weight: 500; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.badge { font-size: 11px; padding: 3px 9px; border-radius: 20px; }
+.badge-simple { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.6); }
+.badge-pro { background: rgba(124,92,191,0.3); color: #c4a7fa; }
+.prompt-text { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 14px; font-size: 13px; line-height: 1.7; color: rgba(255,255,255,0.85); min-height: 80px; margin-bottom: 12px; }
+.copy-btn { background: rgba(255,255,255,0.06); border: 0.5px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 7px 14px; color: rgba(255,255,255,0.7); font-size: 12px; cursor: pointer; }
+.copy-btn:hover { background: rgba(255,255,255,0.1); }
+.tool-row { display: flex; align-items: center; gap: 16px; }
+.tool-icon { width: 48px; height: 48px; background: rgba(124,92,191,0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+.tool-info { flex: 1; }
+.tool-name { font-size: 15px; font-weight: 500; margin-bottom: 4px; }
+.tool-desc { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.5; }
+.open-btn { background: #7c5cbf; border: none; border-radius: 8px; padding: 9px 18px; color: #fff; font-size: 13px; cursor: pointer; white-space: nowrap; text-decoration: none; display: inline-block; }
+.mistakes-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.mistake-item { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.6; color: rgba(255,255,255,0.75); }
+.mistake-x { width: 20px; height: 20px; background: rgba(255,80,80,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; font-size: 10px; color: #ff6b6b; }
+.try-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 4px; }
+.try-card { background: rgba(255,255,255,0.03); border: 0.5px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 14px; }
+.try-num { font-size: 11px; color: #a78bfa; margin-bottom: 6px; }
+.try-title { font-size: 13px; font-weight: 500; margin-bottom: 6px; }
+.try-desc { font-size: 12px; color: rgba(255,255,255,0.45); line-height: 1.5; }
+.error { color: #ff6b6b; text-align: center; padding: 40px; line-height: 1.8; }
+@media (max-width: 768px) {
+  .main { grid-template-columns: 1fr; }
+  .results-grid { grid-template-columns: 1fr; }
+  .try-grid { grid-template-columns: 1fr; }
+  .nav { padding: 12px 16px; }
+  .sidebar { padding: 20px 16px; }
+  .results { padding: 20px 16px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="logo">
+    <div class="logo-icon">B</div>
+    <div class="logo-text">Bella<span>Prompts</span></div>
+  </div>
+  <div class="tier-badge" id="tier-badge">Free — 0 of 5 used</div>
+</nav>
+
+<div class="main">
+  <div class="sidebar">
+    <h2>Prompt Studio</h2>
+    <p>Configure your vision and generate AI-optimized prompts in seconds.</p>
+
+    <label for="content-type">Content type</label>
+    <select id="content-type">
+      <option value="">Select a content type...</option>
+      <option>AI Art / Image</option>
+      <option>AI Video (short, under 30s)</option>
+      <option>AI Video (long form)</option>
+      <option>Flat Lay / Product Shot</option>
+      <option>AI Avatar / Talking Head</option>
+      <option>Social Media Caption</option>
+      <option>Blog / Long-form Content</option>
+    </select>
+
+    <label for="vibe">Aesthetic vibe</label>
+    <select id="vibe">
+      <option value="">Select a vibe...</option>
+      <option>Soft Life / Luxury</option>
+      <option>Dark & Moody</option>
+      <option>Clean & Minimal</option>
+      <option>Bold & Editorial</option>
+      <option>Viral / Trending</option>
+      <option>Cinematic</option>
+      <option>Photorealistic</option>
+    </select>
+
+    <label for="vision">Describe your vision</label>
+    <textarea id="vision" placeholder="e.g. A baddie walking through her penthouse lighting candles, skin glistening, luxury outfit..."></textarea>
+
+    <button class="gen-btn" id="gen-btn" onclick="generatePrompts()">✦ Generate Prompts</button>
+  </div>
+
+  <div class="results" id="results-panel">
+    <div class="empty">
+      <div class="empty-icon">✦</div>
+      <h3>Your prompts will appear here</h3>
+      <p>Configure your content type, choose a vibe, describe your vision, and hit Generate.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+let genCount = parseInt(localStorage.getItem('bp_gen_count') || '0');
+updateTier();
+
+function updateTier() {
+  document.getElementById('tier-badge').textContent = 'Free — ' + genCount + ' of 5 used';
+}
+
+async function generatePrompts() {
+  const contentType = document.getElementById('content-type').value;
+  const vibe = document.getElementById('vibe').value;
+  const vision = document.getElementById('vision').value.trim();
+
+  if (!contentType || !vibe || !vision) {
+    alert('Please fill in all three fields before generating.');
+    return;
+  }
+
+  if (genCount >= 5) {
+    alert('You have used all 5 free generations. Upgrade to Pro for unlimited access!');
+    return;
+  }
+
+  const btn = document.getElementById('gen-btn');
+  btn.disabled = true;
+  const panel = document.getElementById('results-panel');
+  panel.innerHTML = '<div class="loading"><div class="spinner"></div><div class="loading-text">Making your AI dreams come true<br>one prompt at a time...</div></div>';
+
+  const promptInput = 'Content Type: ' + contentType + '. Aesthetic Vibe: ' + vibe + '. Vision: ' + vision;
+
+  try {
+    const response = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt_input: promptInput })
+    });
+
+    const data = await response.json();
+    const text = data.content[0].text;
+    const clean = text.replace(/```json|```/g, '').trim();
+    const result = JSON.parse(clean);
+
+    genCount++;
+    localStorage.setItem('bp_gen_count', genCount);
+    updateTier();
+    renderResults(result, contentType, vibe);
+  } catch(err) {
+    panel.innerHTML = '<div class="error">Something went wrong. Please try again.<br><small>' + err.message + '</small></div>';
+  }
+
+  btn.disabled = false;
+}
+
+function copyText(id, btn) {
+  const text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+  });
+}
+
+function renderResults(r, contentType, vibe) {
+  const panel = document.getElementById('results-panel');
+
+  const mistakesHtml = (r.mistakes || []).map(m => {
+    const dot = m.indexOf('.');
+    const title = dot > -1 ? m.substring(0, dot) : m;
+    const rest = dot > -1 ? m.substring(dot + 1).trim() : '';
+    return '<li class="mistake-item"><div class="mistake-x">✕</div><span><strong>' + title + '</strong>' + (rest ? '. ' + rest : '') + '</span></li>';
+  }).join('');
+
+  const tryHtml = (r.try_next || []).map((t, i) => {
+    return '<div class="try-card"><div class="try-num">0' + (i+1) + '</div><div class="try-title">' + t.title + '</div><div class="try-desc">' + t.desc + '</div></div>';
+  }).join('');
+
+  panel.innerHTML = `
+    <div class="results-grid">
+      <div class="result-header">
+        <div class="result-title">${r.title}</div>
+        <div class="result-sub">${contentType} &nbsp;·&nbsp; ${vibe}</div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">Start here</div>
+        <div class="card-title">Beginner Prompt <span class="badge badge-simple">Simple</span></div>
+        <div class="prompt-text" id="beginner-text">${r.beginner_prompt}</div>
+        <button class="copy-btn" onclick="copyText('beginner-text', this)">Copy</button>
+      </div>
+
+      <div class="card">
+        <div class="card-label">For the perfectionist</div>
+        <div class="card-title">Advanced Prompt <span class="badge badge-pro">Pro</span></div>
+        <div class="prompt-text" id="advanced-text">${r.advanced_prompt}</div>
+        <button class="copy-btn" onclick="copyText('advanced-text', this)">Copy</button>
+      </div>
+
+      <div class="card card-full">
+        <div class="card-label">Recommended tool</div>
+        <div class="tool-row">
+          <div class="tool-icon">🛠</div>
+          <div class="tool-info">
+            <div class="tool-name">${r.recommended_tool}</div>
+            <div class="tool-desc">${r.tool_reason}</div>
+          </div>
+          <a class="open-btn" href="${r.tool_url}" target="_blank" rel="noopener">Open Tool ↗</a>
+        </div>
+      </div>
+
+      <div class="card card-full">
+        <div class="card-label">Before you generate</div>
+        <div class="card-title">Mistakes to Avoid</div>
+        <ul class="mistakes-list">${mistakesHtml}</ul>
+      </div>
+
+      <div class="card card-full">
+        <div class="card-label">Try this next</div>
+        <div class="try-grid">${tryHtml}</div>
+      </div>
+    </div>
+  `;
+}
+</script>
+</body>
+</html>
