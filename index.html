@@ -33,9 +33,12 @@ textarea::placeholder{color:rgba(255,255,255,0.25)}
 .empty-icon{width:72px;height:72px;background:rgba(124,92,191,0.12);border:1px solid rgba(124,92,191,0.2);border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;font-size:30px}
 .empty h3{font-size:20px;font-weight:500;margin-bottom:10px;letter-spacing:-0.3px}
 .empty p{font-size:14px;color:rgba(255,255,255,0.35);max-width:260px;line-height:1.7}
-.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:24px;padding:60px}
-.spinner{width:44px;height:44px;border:2px solid rgba(124,92,191,0.15);border-top-color:#a78bfa;border-radius:50%;animation:spin 0.8s linear infinite}
-.loading-text{font-size:15px;color:rgba(255,255,255,0.5);text-align:center;line-height:1.7;max-width:280px}
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:0;padding:0;position:relative;overflow:hidden;min-height:400px}
+.vortex-bg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.vortex-bg canvas{position:absolute;inset:0}
+.loading-content{position:relative;z-index:10;display:flex;flex-direction:column;align-items:center;gap:20px;padding:40px}
+.spinner{width:60px;height:60px;border:3px solid rgba(167,139,250,0.2);border-top-color:#a78bfa;border-right-color:#c084fc;border-radius:50%;animation:spin 0.9s linear infinite;box-shadow:0 0 30px rgba(124,92,191,0.4)}
+.loading-text{font-size:16px;color:#fff;text-align:center;line-height:1.7;max-width:280px;font-weight:400;text-shadow:0 0 20px rgba(167,139,250,0.8)}
 @keyframes spin{to{transform:rotate(360deg)}}
 .results-wrap{display:flex;flex-direction:column;gap:0}
 .result-hero{margin-bottom:28px}
@@ -67,7 +70,7 @@ textarea::placeholder{color:rgba(255,255,255,0.25)}
 .mistake-x{width:22px;height:22px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;font-size:10px;color:#f87171}
 .gold-line{width:40px;height:1px;background:linear-gradient(90deg,rgba(212,168,100,0.6),transparent);margin-bottom:16px}
 .try-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:6px}
-.try-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:16px;transition:all 0.2s;cursor:default}
+.try-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:16px;transition:all 0.2s}
 .try-card:hover{background:rgba(124,92,191,0.08);border-color:rgba(124,92,191,0.2)}
 .try-num{font-size:11px;color:rgba(212,168,100,0.7);margin-bottom:8px;font-weight:500}
 .try-title{font-size:13px;font-weight:500;margin-bottom:6px;line-height:1.4}
@@ -135,7 +138,8 @@ async function generatePrompts(){
   const btn=document.getElementById('gen-btn');
   btn.disabled=true;
   const panel=document.getElementById('results-panel');
-  panel.innerHTML='<div class="loading"><div class="spinner"></div><div class="loading-text">Making your AI dreams come true<br>one prompt at a time...</div></div>';
+  panel.innerHTML='<div class="loading"><div class="vortex-bg"><canvas id="vortex-canvas"></canvas></div><div class="loading-content"><div class="spinner"></div><div class="loading-text">Making your AI dreams come true<br>one prompt at a time...</div></div></div>';
+  setTimeout(startVortex,50);
   const promptInput='Content Type: '+ct+'. Aesthetic Vibe: '+vibe+'. Vision: '+vision;
   try{
     const response=await fetch('/.netlify/functions/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt_input:promptInput})});
@@ -155,6 +159,47 @@ async function generatePrompts(){
 function copyText(id,btn){
   const text=document.getElementById(id).textContent;
   navigator.clipboard.writeText(text).then(()=>{btn.textContent='Copied!';setTimeout(()=>{btn.textContent='Copy';},2000);});
+}
+function startVortex(){
+  const canvas=document.getElementById('vortex-canvas');
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const panel=document.getElementById('results-panel');
+  canvas.width=panel.offsetWidth;
+  canvas.height=panel.offsetHeight;
+  const W=canvas.width,H=canvas.height;
+  let t=0;
+  const colors=['#7c5cbf','#a78bfa','#c084fc','#e879f9','#6d28d9','#4c1d95','#7e22ce'];
+  function draw(){
+    ctx.fillStyle='rgba(8,8,16,0.15)';
+    ctx.fillRect(0,0,W,H);
+    const cx=W/2,cy=H/2;
+    for(let i=0;i<120;i++){
+      const angle=(i/120)*Math.PI*2*8+t*0.02;
+      const radius=(i/120)*Math.min(W,H)*0.55;
+      const x=cx+Math.cos(angle)*radius;
+      const y=cy+Math.sin(angle)*radius;
+      const size=Math.max(1,(1-i/120)*6);
+      ctx.beginPath();
+      ctx.arc(x,y,size,0,Math.PI*2);
+      ctx.fillStyle=colors[i%colors.length];
+      ctx.globalAlpha=0.6+(Math.sin(t*0.05+i*0.1)*0.4);
+      ctx.fill();
+    }
+    for(let r=0;r<5;r++){
+      const radius=(r/5)*Math.min(W,H)*0.45+20;
+      ctx.beginPath();
+      ctx.arc(cx,cy,radius+Math.sin(t*0.03+r)*15,0,Math.PI*2);
+      ctx.strokeStyle=colors[r%colors.length];
+      ctx.globalAlpha=0.15;
+      ctx.lineWidth=1;
+      ctx.stroke();
+    }
+    ctx.globalAlpha=1;
+    t++;
+    if(document.getElementById('vortex-canvas'))requestAnimationFrame(draw);
+  }
+  draw();
 }
 function renderResults(r,ct,vibe){
   const panel=document.getElementById('results-panel');
