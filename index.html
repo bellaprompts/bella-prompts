@@ -159,7 +159,7 @@ async function generatePrompts() {
   const promptInput = 'Content Type: ' + contentType + '. Aesthetic Vibe: ' + vibe + '. Vision: ' + vision;
 
   try {
-    const response = await fetch('/api/generate', {
+    const response = await fetch('/.netlify/functions/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ prompt_input: promptInput })
