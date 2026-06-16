@@ -144,9 +144,8 @@ async function generatePrompts(){
   try{
     const response=await fetch('/.netlify/functions/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt_input:promptInput})});
     const data=await response.json();
-    const text=data.content[0].text;
-    const clean=text.replace(/```json|```/g,'').trim();
-    const result=JSON.parse(clean);
+    if(data.error) throw new Error(data.error);
+    const result=data.result;
     genCount++;
     localStorage.setItem('bp_gen_count',genCount);
     updateTier();
