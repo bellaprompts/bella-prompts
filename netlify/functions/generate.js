@@ -2,10 +2,8 @@ exports.handler = async function(event) {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
-
   try {
     const { prompt_input } = JSON.parse(event.body);
-
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -23,7 +21,22 @@ Always write for beginner content creators making luxury lifestyle, fashion, bea
       })
     });
 
+    // ✅ Check if Claude API returned an error
+    if (!response.ok) {
+      const errBody = await response.text();
+      return {
+        statusCode: 500,
+        headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'Claude API error: ' + errBody })
+      };
+    }
+
     const data = await response.json();
+
+    // ✅ Extract the text here on the server, not the frontend
+    const text = data.content[0].text;
+    const clean = text.replace(/```json|```/g, '').trim();
+    const result = JSON.parse(clean);
 
     return {
       statusCode: 200,
@@ -31,12 +44,13 @@ Always write for beginner content creators making luxury lifestyle, fashion, bea
         'Access-Control-Allow-Origin': '*',
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(data)
+      body: JSON.stringify({ result }) // ✅ Send { result: {...} } not raw Claude data
     };
+
   } catch(err) {
     return {
       statusCode: 500,
-      headers: { 'Access-Control-Allow-Origin': '*' },
+      headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
       body: JSON.stringify({ error: err.message })
     };
   }
